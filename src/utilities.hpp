@@ -388,16 +388,16 @@ inline vector<string> get_main_arguments(int argc, char* argv[]) {
 	return argc>1 ? vector<string>(argv+1, argv+argc) : vector<string>();
 }
 
-inline string to_string(const string& s){
+inline string cl_to_string(const string& s){
 	return s;
 }
-inline string to_string(char c) {
+inline string cl_to_string(char c) {
 	return string(1, c);
 }
-inline string to_string(uchar c) {
+inline string cl_to_string(uchar c) {
 	return string(1, c);
 }
-inline string to_string(ulong x) {
+inline string cl_to_string(ulong x) {
 	string r = "";
 	do {
 		r = (char)(x%10ull+48ull)+r;
@@ -405,10 +405,10 @@ inline string to_string(ulong x) {
 	} while(x);
 	return r;
 }
-inline string to_string(slong x) {
-	return x>=0ll ? to_string((ulong)x) : "-"+to_string((ulong)(-x));
+inline string cl_to_string(slong x) {
+	return x>=0ll ? cl_to_string((ulong)x) : "-"+cl_to_string((ulong)(-x));
 }
-inline string to_string(uint x) {
+inline string cl_to_string(uint x) {
 	string r = "";
 	do {
 		r = (char)(x%10u+48u)+r;
@@ -416,10 +416,10 @@ inline string to_string(uint x) {
 	} while(x);
 	return r;
 }
-inline string to_string(int x) {
-	return x>=0 ? to_string((uint)x) : "-"+to_string((uint)(-x));
+inline string cl_to_string(int x) {
+	return x>=0 ? cl_to_string((uint)x) : "-"+cl_to_string((uint)(-x));
 }
-inline string to_string(float x) { // convert float to string with full precision (<string> to_string() prints only 6 decimals)
+inline string cl_to_string(float x) { // convert float to string with full precision (<string> cl_to_string() prints only 6 decimals)
 	string s = "";
 	if(x<0.0f) { s += "-"; x = -x; }
 	if(std::isnan(x)) return s+"NaN";
@@ -427,9 +427,9 @@ inline string to_string(float x) { // convert float to string with full precisio
 	uint integral, decimal;
 	int exponent = 0;
 	split_float(x, integral, decimal, exponent);
-	return s+to_string(integral)+"."+decimal_to_string_float(decimal, 8)+(exponent!=0?"E"+to_string(exponent):"");
+	return s+cl_to_string(integral)+"."+decimal_to_string_float(decimal, 8)+(exponent!=0?"E"+cl_to_string(exponent):"");
 }
-inline string to_string(double x) { // convert double to string with full precision (<string> to_string() prints only 6 decimals)
+inline string cl_to_string(double x) { // convert double to string with full precision (<string> cl_to_string() prints only 6 decimals)
 	string s = "";
 	if(x<0.0) { s += "-"; x = -x; }
 	if(std::isnan(x)) return s+"NaN";
@@ -438,9 +438,9 @@ inline string to_string(double x) { // convert double to string with full precis
 	ulong decimal;
 	int exponent = 0;
 	split_double(x, integral, decimal, exponent);
-	return s+to_string(integral)+"."+decimal_to_string_double(decimal, 16)+(exponent!=0?"E"+to_string(exponent):"");
+	return s+cl_to_string(integral)+"."+decimal_to_string_double(decimal, 16)+(exponent!=0?"E"+cl_to_string(exponent):"");
 }
-inline string to_string(float x, const uint decimals) { // convert float to string with specified number of decimals
+inline string cl_to_string(float x, const uint decimals) { // convert float to string with specified number of decimals
 	string s = "";
 	if(x<0.0f) { s += "-"; x = -x; }
 	if(std::isnan(x)) return s+"NaN";
@@ -449,9 +449,9 @@ inline string to_string(float x, const uint decimals) { // convert float to stri
 	x += 0.5f/power; // rounding
 	const ulong integral = (ulong)x;
 	const uint decimal = (uint)((x-(float)integral)*power);
-	return s+to_string(integral)+(decimals==0u ? "" : "."+decimal_to_string_float(decimal, min((int)decimals, 8)));
+	return s+cl_to_string(integral)+(decimals==0u ? "" : "."+decimal_to_string_float(decimal, min((int)decimals, 8)));
 }
-inline string to_string(double x, const uint decimals) { // convert float to string with specified number of decimals
+inline string cl_to_string(double x, const uint decimals) { // convert float to string with specified number of decimals
 	string s = "";
 	if(x<0.0) { s += "-"; x = -x; }
 	if(std::isnan(x)) return s+"NaN";
@@ -460,7 +460,7 @@ inline string to_string(double x, const uint decimals) { // convert float to str
 	x += 0.5/power; // rounding
 	const ulong integral = (ulong)x;
 	const ulong decimal = (ulong)((x-(double)integral)*power);
-	return s+to_string(integral)+(decimals==0u ? "" : "."+decimal_to_string_double(decimal, min((int)decimals, 16)));
+	return s+cl_to_string(integral)+(decimals==0u ? "" : "."+decimal_to_string_double(decimal, min((int)decimals, 16)));
 }
 
 inline uint length(const string& s) {
@@ -536,10 +536,10 @@ inline string alignr(const uint n, const string& x="") { // converts x to string
 	return s.substr((uint)min((int)s.length()-(int)n, (int)n), s.length());
 }
 template<typename T> inline string alignl(const uint n, const T x) { // converts x to string with spaces behind such that length is n if x does not have more digits than n
-	return alignl(n, to_string(x));
+	return alignl(n, cl_to_string(x));
 }
 template<typename T> inline string alignr(const uint n, const T x) { // converts x to string with spaces in front such that length is n if x does not have more digits than n
-	return alignr(n, to_string(x));
+	return alignr(n, cl_to_string(x));
 }
 
 inline void print(const string& s="") {
@@ -555,7 +555,7 @@ inline void wait() {
 	std::cin.get();
 }
 template<typename T> inline void println(const T& x) {
-	println(to_string(x));
+	println(cl_to_string(x));
 }
 
 #ifdef UTILITIES_REGEX

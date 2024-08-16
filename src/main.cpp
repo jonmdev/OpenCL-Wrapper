@@ -16,14 +16,14 @@ int main() {
 		C[n] = 1.0f;
 	}
 
-	print_info("Value before kernel execution: C[0] = "+to_string(C[0]));
+	print_info("Value before kernel execution: C[0] = "+cl_to_string(C[0]));
 
 	A.write_to_device(); // copy data from host memory to device memory
 	B.write_to_device();
 	add_kernel.run(); // run add_kernel on the device
 	C.read_from_device(); // copy data from device memory to host memory
 
-	print_info("Value after kernel execution: C[0] = "+to_string(C[0]));
+	print_info("Value after kernel execution: C[0] = "+cl_to_string(C[0]));
 
 	wait();
 	return 0;

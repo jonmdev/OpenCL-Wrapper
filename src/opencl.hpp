@@ -7,7 +7,7 @@
 #ifndef _WIN32
 #pragma GCC diagnostic ignored "-Wignored-attributes" // ignore compiler warnings for CL/cl.hpp with g++
 #endif // _WIN32
-#include <CL/cl.hpp> // OpenCL 1.0, 1.1, 1.2
+#include "cl.hpp" // OpenCL 1.0, 1.1, 1.2
 #include "utilities.hpp"
 using cl::Event;
 
@@ -165,14 +165,14 @@ inline void print_device_info(const Device_Info& d) { // print OpenCL device inf
 	const string os = "unknown operating system";
 #endif // operating system
 	println("\r|----------------.------------------------------------------------------------|");
-	println("| Device ID      | "+alignl(58, to_string(d.id)             )+" |");
+	println("| Device ID      | "+alignl(58, cl_to_string(d.id)             )+" |");
 	println("| Device Name    | "+alignl(58, d.name                      )+" |");
 	println("| Device Vendor  | "+alignl(58, d.vendor                    )+" |");
 	println("| Device Driver  | "+alignl(58, d.driver_version+" ("+os+")")+" |");
 	println("| OpenCL Version | "+alignl(58, d.opencl_c_version          )+" |");
-	println("| Compute Units  | "+alignl(58, to_string(d.compute_units)+" at "+to_string(d.clock_frequency)+" MHz ("+to_string(d.cores)+" cores, "+to_string(d.tflops, 3)+" TFLOPs/s)")+" |");
-	println("| Memory, Cache  | "+alignl(58, to_string(d.memory)+" MB, "+to_string(d.global_cache)+" KB global / "+to_string(d.local_cache)+" KB local")+" |");
-	println("| Buffer Limits  | "+alignl(58, to_string(d.max_global_buffer)+" MB global, "+to_string(d.max_constant_buffer)+" KB constant")+" |");
+	println("| Compute Units  | "+alignl(58, cl_to_string(d.compute_units)+" at "+cl_to_string(d.clock_frequency)+" MHz ("+cl_to_string(d.cores)+" cores, "+cl_to_string(d.tflops, 3)+" TFLOPs/s)")+" |");
+	println("| Memory, Cache  | "+alignl(58, cl_to_string(d.memory)+" MB, "+cl_to_string(d.global_cache)+" KB global / "+cl_to_string(d.local_cache)+" KB local")+" |");
+	println("| Buffer Limits  | "+alignl(58, cl_to_string(d.max_global_buffer)+" MB global, "+cl_to_string(d.max_constant_buffer)+" KB constant")+" |");
 	println("|----------------'------------------------------------------------------------|");
 }
 inline vector<Device_Info> get_devices(const bool print_info=true) { // returns a vector of all available OpenCL devices
@@ -237,7 +237,7 @@ inline Device_Info select_device_with_id(const uint id, const vector<Device_Info
 	if(id<(uint)devices.size()) {
 		return devices[id];
 	} else {
-		print_error("Your selected Device ID ("+to_string(id)+") is wrong.");
+		print_error("Your selected Device ID ("+cl_to_string(id)+") is wrong.");
 		return devices[0]; // is never executed, just to avoid compiler warnings
 	}
 }
@@ -248,7 +248,7 @@ private:
 	cl::CommandQueue cl_queue;
 	bool exists = false;
 	inline string enable_device_capabilities() const { return // enable FP64/FP16 capabilities if available
-		"\n	#define def_workgroup_size "+to_string(WORKGROUP_SIZE)+"u"
+		"\n	#define def_workgroup_size "+cl_to_string(WORKGROUP_SIZE)+"u"
 		"\n	#ifdef cl_khr_fp64"
 		"\n	#pragma OPENCL EXTENSION cl_khr_fp64 : enable" // make sure cl_khr_fp64 extension is enabled
 		"\n	#endif"
@@ -280,7 +280,7 @@ public:
 		write_file("bin/kernel.log", log); // save build log
 		if((uint)log.length()>2u) print_warning(log); // print build log
 #endif // LOG
-		if(error) print_error("OpenCL C code compilation failed with error code "+to_string(error)+". Make sure there are no errors in kernel.cpp.");
+		if(error) print_error("OpenCL C code compilation failed with error code "+cl_to_string(error)+". Make sure there are no errors in kernel.cpp.");
 		else print_info("OpenCL C code successfully compiled.");
 #ifdef PTX // generate assembly (ptx) file for OpenCL code
 		write_file("bin/kernel.ptx", cl_program.getInfo<CL_PROGRAM_BINARIES>()[0]); // save binary (ptx file)
@@ -318,11 +318,11 @@ private:
 		this->cl_queue = device.get_cl_queue();
 		if(allocate_device) {
 			device.info.memory_used += (uint)(capacity()/1048576ull); // track device memory usage
-			if(device.info.memory_used>device.info.memory) print_error("Device \""+device.info.name+"\" does not have enough memory. Allocating another "+to_string((uint)(capacity()/1048576ull))+" MB would use a total of "+to_string(device.info.memory_used)+" MB / "+to_string(device.info.memory)+" MB.");
+			if(device.info.memory_used>device.info.memory) print_error("Device \""+device.info.name+"\" does not have enough memory. Allocating another "+cl_to_string((uint)(capacity()/1048576ull))+" MB would use a total of "+cl_to_string(device.info.memory_used)+" MB / "+cl_to_string(device.info.memory)+" MB.");
 			int error = 0;
 			device_buffer = cl::Buffer(device.get_cl_context(), CL_MEM_READ_WRITE|((int)device.info.intel_gpu_above_4gb_patch<<23), capacity(), nullptr, &error); // for Intel GPUs, set flag CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL = (1<<23)
-			if(error==-61) print_error("Memory size is too large at "+to_string((uint)(capacity()/1048576ull))+" MB. Device \""+device.info.name+"\" accepts a maximum buffer size of "+to_string(device.info.max_global_buffer)+" MB.");
-			else if(error) print_error("Device buffer allocation failed with error code "+to_string(error)+".");
+			if(error==-61) print_error("Memory size is too large at "+cl_to_string((uint)(capacity()/1048576ull))+" MB. Device \""+device.info.name+"\" accepts a maximum buffer size of "+cl_to_string(device.info.max_global_buffer)+" MB.");
+			else if(error) print_error("Device buffer allocation failed with error code "+cl_to_string(error)+".");
 			device_buffer_exists = true;
 		}
 	}
@@ -551,8 +551,8 @@ private:
 	inline void check_for_errors(const int error) {
 		if(error==-48) print_error("There is no OpenCL kernel with name \""+name+"(...)\" in the OpenCL C code! Check spelling!");
 		if(error<-48&&error>-53) print_error("Parameters for OpenCL kernel \""+name+"(...)\" don't match between C++ and OpenCL C!");
-		if(error==-54) print_error("Workgrop size "+to_string(WORKGROUP_SIZE)+" for OpenCL kernel \""+name+"(...)\" is invalid!");
-		if(error!=0) print_error("OpenCL kernel \""+name+"(...)\" failed with error code "+to_string(error)+"!");
+		if(error==-54) print_error("Workgrop size "+cl_to_string(WORKGROUP_SIZE)+" for OpenCL kernel \""+name+"(...)\" is invalid!");
+		if(error!=0) print_error("OpenCL kernel \""+name+"(...)\" failed with error code "+cl_to_string(error)+"!");
 	}
 	template<typename T> inline void link_parameter(const uint position, const Memory<T>& memory) {
 		check_for_errors(cl_kernel.setArg(position, memory.get_cl_buffer()));
